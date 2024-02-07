@@ -62,5 +62,4 @@ public class UserAdapter extends AbstractUserAdapterFederatedStorage {
         this.username = username;
     }
 
-
 }

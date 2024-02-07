@@ -13,7 +13,7 @@ import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.user.UserLookupProvider;
 import org.keycloak.storage.user.UserQueryProvider;
 import org.keycloak.storage.user.UserRegistrationProvider;
-import org.opensingular.dbuserprovider.model.QueryConfigurations;
+import org.opensingular.dbuserprovider.model.DBQueries;
 import org.opensingular.dbuserprovider.model.UserAdapter;
 import org.opensingular.dbuserprovider.persistence.DataSourceProvider;
 import org.opensingular.dbuserprovider.persistence.UserRepository;
@@ -37,16 +37,14 @@ public class DBUserStorageProvider implements
     private final KeycloakSession session;
     private final ComponentModel model;
     private final UserRepository repository;
-    private final boolean allowDatabaseToOverwriteKeycloak;
+    private final boolean allowDatabaseToOverwriteKeycloak = true;
 
     DBUserStorageProvider(KeycloakSession session,
                           ComponentModel model,
-                          DataSourceProvider dataSourceProvider,
-                          QueryConfigurations queryConfigurations) {
+                          DataSourceProvider dataSourceProvider) {
         this.session = session;
         this.model = model;
-        this.repository = new UserRepository(dataSourceProvider, queryConfigurations);
-        this.allowDatabaseToOverwriteKeycloak = queryConfigurations.getAllowDatabaseToOverwriteKeycloak();
+        this.repository = new UserRepository(dataSourceProvider);
     }
 
 

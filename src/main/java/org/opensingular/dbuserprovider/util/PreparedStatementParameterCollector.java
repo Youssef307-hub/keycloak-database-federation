@@ -4,29 +4,14 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
-import java.sql.Array;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.NClob;
-import java.sql.ParameterMetaData;
-import java.sql.PreparedStatement;
-import java.sql.Ref;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.RowId;
-import java.sql.SQLWarning;
-import java.sql.SQLXML;
-import java.sql.Time;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
 public class PreparedStatementParameterCollector implements PreparedStatement {
 
-    private Map<Integer, Object> parameters = new HashMap<>();
+    private final Map<Integer, Object> parameters = new HashMap<>();
 
     Map<Integer, Object> getParameters() {
         return parameters;
@@ -398,24 +383,24 @@ public class PreparedStatementParameterCollector implements PreparedStatement {
     }
 
     @Override
-    public void setFetchDirection(int direction) {
-
-    }
-
-    @Override
     public int getFetchDirection() {
         //noinspection MagicConstant
         return 0;
     }
 
     @Override
-    public void setFetchSize(int rows) {
+    public void setFetchDirection(int direction) {
 
     }
 
     @Override
     public int getFetchSize() {
         return 0;
+    }
+
+    @Override
+    public void setFetchSize(int rows) {
+
     }
 
     @Override
@@ -501,13 +486,13 @@ public class PreparedStatementParameterCollector implements PreparedStatement {
     }
 
     @Override
-    public void setPoolable(boolean poolable) {
-
+    public boolean isPoolable() {
+        return false;
     }
 
     @Override
-    public boolean isPoolable() {
-        return false;
+    public void setPoolable(boolean poolable) {
+
     }
 
     @Override

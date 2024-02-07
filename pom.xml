@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
 
 
-    <artifactId>singular-user-storage-provider</artifactId>
+    <artifactId>user-storage-provider</artifactId>
     <groupId>org.opensingular</groupId>
     <version>2.4</version>
 
@@ -52,13 +52,11 @@
             <optional>true</optional>
         </dependency>
 
-
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>4.0.3</version>
         </dependency>
-
 
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -71,7 +69,6 @@
             <artifactId>commons-codec</artifactId>
             <version>1.15</version>
         </dependency>
-
 
         <dependency>
             <groupId>commons-io</groupId>
@@ -86,12 +83,6 @@
         </dependency>
 
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.12</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>42.2.19</version>
@@ -103,17 +94,13 @@
             <version>db2jcc4</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.oracle.ojdbc</groupId>
-            <artifactId>ojdbc8</artifactId>
-            <version>19.3.0.0</version>
-        </dependency>
 
         <dependency>
             <groupId>at.favre.lib</groupId>
             <artifactId>bcrypt</artifactId>
             <version>0.9.0</version>
         </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

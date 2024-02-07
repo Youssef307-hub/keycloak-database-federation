@@ -1,19 +1,14 @@
 package org.opensingular.dbuserprovider.persistence;
 
 import lombok.extern.jbosslog.JBossLog;
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.codec.binary.StringUtils;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import org.opensingular.dbuserprovider.DBUserStorageException;
-import org.opensingular.dbuserprovider.model.QueryConfigurations;
-import org.opensingular.dbuserprovider.util.PBKDF2SHA256HashingUtil;
+import org.opensingular.dbuserprovider.model.DBQueries;
 import org.opensingular.dbuserprovider.util.PagingUtil;
 import org.opensingular.dbuserprovider.util.PagingUtil.Pageable;
 
 import javax.sql.DataSource;
-import java.security.MessageDigest;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,13 +20,11 @@ import java.util.function.Function;
 @JBossLog
 public class UserRepository {
 
-    private DataSourceProvider  dataSourceProvider;
-    private QueryConfigurations queryConfigurations;
+    private final DataSourceProvider dataSourceProvider;
+    private final DBQueries dbQueries = new DBQueries();
 
-
-    public UserRepository(DataSourceProvider dataSourceProvider, QueryConfigurations queryConfigurations) {
+    public UserRepository(DataSourceProvider dataSourceProvider) {
         this.dataSourceProvider  = dataSourceProvider;
-        this.queryConfigurations = queryConfigurations;
     }
     
     
@@ -41,7 +34,7 @@ public class UserRepository {
             DataSource dataSource = dataSourceOpt.get();
             try (Connection c = dataSource.getConnection()) {
                 if (pageable != null) {
-                    query = PagingUtil.formatScriptWithPageable(query, pageable, queryConfigurations.getRDBMS());
+                    query = PagingUtil.formatScriptWithPageable(query, pageable);
                 }
                 log.infov("Query: {0} params: {1} ", query, Arrays.toString(params));
                 try (PreparedStatement statement = c.prepareStatement(query)) {
@@ -109,54 +102,41 @@ public class UserRepository {
     }
     
     public List<Map<String, String>> getAllUsers() {
-        return doQuery(queryConfigurations.getListAll(), null, this::readMap);
+        return doQuery(dbQueries.getListAll(), null, this::readMap);
     }
     
     public int getUsersCount(String search) {
         if (search == null || search.isEmpty()) {
-            return Optional.ofNullable(doQuery(queryConfigurations.getCount(), null, this::readInt)).orElse(0);
+            return Optional.ofNullable(doQuery(dbQueries.getCount(), null, this::readInt)).orElse(0);
         } else {
-            String query = String.format("select count(*) from (%s) count", queryConfigurations.getFindBySearchTerm());
+            String query = String.format("select count(*) from (%s) count", dbQueries.getFindBySearchTerm());
             return Optional.ofNullable(doQuery(query, null, this::readInt, search)).orElse(0);
         }
     }
-    
-    
+
     public Map<String, String> findUserById(String id) {
-        return Optional.ofNullable(doQuery(queryConfigurations.getFindById(), null, this::readMap, id))
+        return Optional.ofNullable(doQuery(dbQueries.getFindById(), null, this::readMap, id))
                        .orElse(Collections.emptyList())
                        .stream().findFirst().orElse(null);
     }
     
     public Optional<Map<String, String>> findUserByUsername(String username) {
-        return Optional.ofNullable(doQuery(queryConfigurations.getFindByUsername(), null, this::readMap, username))
+        return Optional.ofNullable(doQuery(dbQueries.getFindByUsername(), null, this::readMap, username))
                        .orElse(Collections.emptyList())
                        .stream().findFirst();
     }
     
     public List<Map<String, String>> findUsers(String search, PagingUtil.Pageable pageable) {
         if (search == null || search.isEmpty()) {
-            return doQuery(queryConfigurations.getListAll(), pageable, this::readMap);
+            return doQuery(dbQueries.getListAll(), pageable, this::readMap);
         }
-        return doQuery(queryConfigurations.getFindBySearchTerm(), pageable, this::readMap, search);
+        return doQuery(dbQueries.getFindBySearchTerm(), pageable, this::readMap, search);
     }
     
     public boolean validateCredentials(String username, String password) {
-        String hash = Optional.ofNullable(doQuery(queryConfigurations.getFindPasswordHash(), null, this::readString, username)).orElse("");
-        if (queryConfigurations.isBlowfish()) {
-            return !hash.isEmpty() && BCrypt.verifyer().verify(password.toCharArray(), hash).verified;
-        } else {
-            String hashFunction = queryConfigurations.getHashFunction();
+        String hash = Optional.ofNullable(doQuery(dbQueries.getFindPasswordHash(), null, this::readString, username)).orElse("");
 
-            if(hashFunction.equals("PBKDF2-SHA256")){
-                String[] components = hash.split("\\$");
-                return new PBKDF2SHA256HashingUtil(password, components[2], Integer.valueOf(components[1])).validatePassword(components[3]);
-            }
-
-            MessageDigest digest   = DigestUtils.getDigest(hashFunction);
-            byte[]        pwdBytes = StringUtils.getBytesUtf8(password);
-            return Objects.equals(Hex.encodeHexString(digest.digest(pwdBytes)), hash);
-        }
+        return !hash.isEmpty() && BCrypt.verifyer().verify(password.toCharArray(), hash).verified;
     }
     
     public boolean updateCredentials(String username, String password) {
@@ -164,6 +144,6 @@ public class UserRepository {
     }
     
     public boolean removeUser() {
-        return queryConfigurations.getAllowKeycloakDelete();
+        return dbQueries.getAllowKeycloakDelete();
     }
 }

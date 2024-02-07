@@ -24,20 +24,19 @@ public class DataSourceProvider implements Closeable {
     public DataSourceProvider() {
     }
 
-
     synchronized Optional<DataSource> getDataSource() {
         return Optional.ofNullable(hikariDataSource);
     }
 
 
-    public void configure(String url, RDBMS rdbms, String user, String pass, String name) {
+    public void configure(String name) {
         HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setUsername(user);
-        hikariConfig.setPassword(pass);
-        hikariConfig.setPoolName(StringUtils.capitalize("SINGULAR-USER-PROVIDER-" + name + SIMPLE_DATE_FORMAT.format(new Date())));
-        hikariConfig.setJdbcUrl(url);
-        hikariConfig.setConnectionTestQuery(rdbms.getTestString());
-        hikariConfig.setDriverClassName(rdbms.getDriver());
+        hikariConfig.setUsername("postgres");
+        hikariConfig.setPassword("root");
+        hikariConfig.setPoolName(StringUtils.capitalize("USER-PROVIDER-" + name + SIMPLE_DATE_FORMAT.format(new Date())));
+        hikariConfig.setJdbcUrl("jdbc:postgresql://host.docker.internal:5432/testkc");
+        hikariConfig.setConnectionTestQuery("SELECT 1");
+        hikariConfig.setDriverClassName(org.postgresql.Driver.class.getName());
         HikariDataSource newDS = new HikariDataSource(hikariConfig);
         newDS.validate();
         HikariDataSource old = this.hikariDataSource;

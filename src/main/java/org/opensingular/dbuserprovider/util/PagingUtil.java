@@ -1,10 +1,10 @@
 package org.opensingular.dbuserprovider.util;
 
 import org.hibernate.dialect.Dialect;
+import org.hibernate.dialect.PostgreSQLDialect;
 import org.hibernate.dialect.pagination.LimitHandler;
 import org.hibernate.engine.spi.RowSelection;
 import org.opensingular.dbuserprovider.DBUserStorageException;
-import org.opensingular.dbuserprovider.persistence.RDBMS;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -16,20 +16,9 @@ public class PagingUtil {
     @SuppressWarnings("RegExpRedundantEscape")
     private static final Pattern SINGLE_QUESTION_MARK_REGEX = Pattern.compile("(^|[^\\?])(\\?)([^\\?]|$)");
 
+    public static String formatScriptWithPageable(String query, Pageable pageable) {
 
-    public static class Pageable {
-        private final int firstResult;
-        private final int maxResults;
-
-        public Pageable(int firstResult, int maxResults) {
-            this.firstResult = firstResult;
-            this.maxResults = maxResults;
-        }
-    }
-
-    public static String formatScriptWithPageable(String query, Pageable pageable, RDBMS RDBMS) {
-
-        final Dialect dialect = RDBMS.getDialect();
+        final Dialect dialect = new PostgreSQLDialect();
 
         RowSelection rowSelection = new RowSelection();
         rowSelection.setFetchSize(pageable.maxResults);
@@ -42,7 +31,7 @@ public class PagingUtil {
         try {
             LimitHandler limitHandler = dialect.getLimitHandler();
             processedSQL = new StringBuilder(limitHandler.processSql(escapedSQL, rowSelection));
-            int                                 col       = 1;
+            int col = 1;
             PreparedStatementParameterCollector collector = new PreparedStatementParameterCollector();
             col += limitHandler.bindLimitParametersAtStartOfQuery(rowSelection, collector, col);
             limitHandler.bindLimitParametersAtEndOfQuery(rowSelection, collector, col);
@@ -62,13 +51,22 @@ public class PagingUtil {
         }
     }
 
-
     private static String unescapeQuestionMarks(String sql) {
         return sql.replaceAll("\\?\\?", "?");
     }
 
     private static String escapeQuestionMarks(String sql) {
         return sql.replaceAll("\\?", "??");
+    }
+
+    public static class Pageable {
+        private final int firstResult;
+        private final int maxResults;
+
+        public Pageable(int firstResult, int maxResults) {
+            this.firstResult = firstResult;
+            this.maxResults = maxResults;
+        }
     }
 
 }
